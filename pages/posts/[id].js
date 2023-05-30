@@ -7,17 +7,15 @@ import Post from "../../components/Post";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import {
-    collection,
-    doc,
-    onSnapshot,
-    orderBy,
-    query,
-  } from "firebase/firestore";
-  import { db } from "../../firebase";
-  import Comment from "../../components/Comment";
-  import { AnimatePresence, motion } from "framer-motion";
-
-
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+import Comment from "../../components/Comment";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function PostPage({ newsResults, randomUsersResults }) {
   const router = useRouter();
@@ -71,7 +69,7 @@ export default function PostPage({ newsResults, randomUsersResults }) {
           <Post id={id} post={post} />
           {comments.length > 0 && (
             <div className="">
-            <AnimatePresence>
+              <AnimatePresence>
                 {comments.map((comment) => (
                   <motion.div
                     key={comment.id}
@@ -117,17 +115,9 @@ export async function getServerSideProps() {
 
   // Who to follow section
 
-  let randomUsersResults = [];
-
-  try {
-    const res = await fetch(
-      "https://randomuser.me/api/?results=30&inc=name,login,picture"
-    );
-
-    randomUsersResults = await res.json();
-  } catch (e) {
-    randomUsersResults = [];
-  }
+  const randomUsersResults = await fetch(
+    "https://randomuser.me/api/?results=30&inc=name,login,picture"
+  ).then((res) => res.json());
 
   return {
     props: {
