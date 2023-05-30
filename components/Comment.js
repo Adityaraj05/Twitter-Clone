@@ -16,7 +16,7 @@ import {
     setDoc,
   } from "firebase/firestore";
   import { db, storage } from "../firebase";
-  import { signIn, useSession } from "next-auth/react";
+  import { userState } from "../atom/userAtom";
   import { useState, useEffect } from "react";
   import { deleteObject, ref } from "firebase/storage";
   import { useRecoilState } from "recoil";
@@ -24,7 +24,7 @@ import {
   import { useRouter } from "next/router";
   
   export default function Comment({ comment, commentId, originalPostId }) {
-    const { data: session } = useSession();
+    const [currentUser] = useRecoilState(userState);
     const [likes, setLikes] = useState([]);
     const [hasLiked, setHasLiked] = useState(false);
     const [open, setOpen] = useRecoilState(modalState);
@@ -39,13 +39,11 @@ import {
     }, [db, originalPostId, commentId]);
   
     useEffect(() => {
-      setHasLiked(
-        likes.findIndex((like) => like.id === session?.user.uid) !== -1
-      );
-    }, [likes]);
+        setHasLiked(likes.findIndex((like) => like.id === currentUser?.uid) !== -1);
+    }, [likes, currentUser]);
   
     async function likeComment() {
-      if (session) {
+      if (currentUser) {
         if (hasLiked) {
           await deleteDoc(
             doc(
@@ -55,7 +53,7 @@ import {
               "comments",
               commentId,
               "likes",
-              session?.user.uid
+              currentUser?.uid
             )
           );
         } else {
@@ -67,15 +65,16 @@ import {
               "comments",
               commentId,
               "likes",
-              session?.user.uid
+              currentUser?.uid
             ),
             {
-              username: session.user.username,
+              username:currentUser?.username,
             }
           );
         }
       } else {
         signIn();
+        router.push("/auth/signin");
       }
     }
   
@@ -127,8 +126,9 @@ import {
             <div className="flex items-center select-none">
               <ChatIcon
                 onClick={() => {
-                  if (!session) {
-                    signIn();
+                    if (!currentUser) {
+                  // signIn();
+                  router.push("/auth/signin");
                   } else {
                     setPostId(originalPostId);
                     setOpen(!open);
@@ -137,7 +137,7 @@ import {
                 className="h-9 w-9 hoverEffect p-2 hover:text-sky-500 hover:bg-sky-100"
               />
             </div>
-            {session?.user.uid === comment?.userId && (
+            {currentUser?.uid === comment?.userId && (
               <TrashIcon
                 onClick={deleteComment}
                 className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100"

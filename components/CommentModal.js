@@ -1,5 +1,4 @@
 import { useRecoilState } from "recoil";
-
 import { modalState, postIdState } from "../atom/modalAtom";
 import { useRouter } from "next/router";
 import Modal from "react-modal";
@@ -11,21 +10,20 @@ import {
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import {
-    addDoc,
-    collection,
-    doc,
-    onSnapshot,
-    serverTimestamp,
-  } from "firebase/firestore";
-
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+} from "firebase/firestore";
 import Moment from "react-moment";
-import { useSession } from "next-auth/react";
+import { userState } from "../atom/userAtom";
 export default function CommentModal() {
   const [open, setOpen] = useRecoilState(modalState);
   const [postId] = useRecoilState(postIdState);
+  const [currentUser] = useRecoilState(userState);
   const [post, setPost] = useState({});
   const [input, setInput] = useState("");
-  const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -37,10 +35,11 @@ export default function CommentModal() {
   async function sendComment() {
     await addDoc(collection(db, "posts", postId, "comments"), {
       comment: input,
-      name: session.user.name,
-      username: session.user.username,
-      userImg: session.user.image,
+      name: currentUser.name,
+      username: currentUser.username,
+      userImg: currentUser.userImg,
       timestamp: serverTimestamp(),
+      userId: currentUser.uid,
     });
 
     setOpen(false);
@@ -50,8 +49,8 @@ export default function CommentModal() {
 
   return (
     <div>
-    {open && (
-     <Modal
+      {open && (
+        <Modal
           isOpen={open}
           onRequestClose={() => setOpen(false)}
           className="max-w-lg w-[90%]  absolute top-24 left-[50%] translate-x-[-50%] bg-white border-2 border-gray-200 rounded-xl shadow-md"
@@ -88,7 +87,7 @@ export default function CommentModal() {
 
             <div className="flex  p-3 space-x-3">
               <img
-                src={session.user.image}
+                src={currentUser.userImg}
                 alt="user-img"
                 className="h-11 w-11 rounded-full cursor-pointer hover:brightness-95"
               />
@@ -132,7 +131,6 @@ export default function CommentModal() {
           </div>
         </Modal>
       )}
-     
     </div>
   );
 }
