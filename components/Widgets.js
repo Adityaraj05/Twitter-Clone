@@ -54,7 +54,7 @@ export default function Widgets({ newsResults,  randomUsersResults  }) {
             >
               <div
                 key={randomUser.login.username}
-                className="flex items-center px-4 py-2  cursor-pointer hover:bg-gray-200 transition duration-500 ease-out"
+                className="flex items-center px-4 py-2  cursor-pointer hover:bg-gray-300 rounded-full transition duration-500 ease-out"
               >
                 <img
                   className="rounded-full"
